@@ -21,7 +21,6 @@ const SERVICES = [
   { id: 12, name: "Reflexo / Luzes", price: 60.00, prefix: "a partir de" },
 ];
 
-// Gera horários das 09:00 às 19:00 com intervalos de 40 minutos
 const generateTimeSlots = () => {
   const slots = [];
   let startMinutes = 9 * 60; // 09:00
@@ -53,7 +52,6 @@ export function BookingWidget({ onAppointmentCreated }) {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Atualiza os horários ocupados sempre que muda de barbeiro ou de data
   useEffect(() => {
     if (!selectedDate) {
       setBookedSlots([]);
@@ -62,12 +60,9 @@ export function BookingWidget({ onAppointmentCreated }) {
     const fetchBookedSlots = async () => {
       try {
         const res = await api.get(`/appointments?date=${selectedDate}&barber_id=${selectedBarber}`);
-        // Se a API retornar uma lista de agendamentos para este dia/barbeiro
         const appointments = res.data || [];
-        const timesOcupados = appointments.map((app) => app.time);
-        setBookedSlots(timesOcupados);
+        setBookedSlots(appointments.map((app) => app.time));
       } catch (err) {
-        // Fallback local caso a API não tenha endpoint específico
         const allSaved = JSON.parse(localStorage.getItem("studio01_appointments") || "[]");
         const ocupados = allSaved
           .filter((app) => String(app.barber_id) === String(selectedBarber) && app.date === selectedDate)
@@ -88,7 +83,6 @@ export function BookingWidget({ onAppointmentCreated }) {
       return;
     }
 
-    // Validação extra de segurança local
     if (bookedSlots.includes(selectedTime)) {
       setError("Este horário já foi reservado. Por favor, escolha outro.");
       return;
@@ -113,13 +107,10 @@ export function BookingWidget({ onAppointmentCreated }) {
 
       await api.post("/appointments", payload);
 
-      // Registo local automático no localStorage para sincronizar a agenda instantaneamente
       const existing = JSON.parse(localStorage.getItem("studio01_appointments") || "[]");
       localStorage.setItem("studio01_appointments", JSON.stringify([...existing, payload]));
 
-      // Atualiza os horários ocupados no ecrã
       setBookedSlots([...bookedSlots, selectedTime]);
-
       setSuccessMessage(`Agendamento confirmado para ${selectedDate} às ${selectedTime}!`);
       setClientName("");
       setClientPhone("");
@@ -133,16 +124,16 @@ export function BookingWidget({ onAppointmentCreated }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Agenda Automatizada — Studio 01</h2>
+    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl max-w-3xl mx-auto border border-gray-100">
+      <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center tracking-tight">Agendamento Studio 01</h2>
 
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
-      {successMessage && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">{successMessage}</div>}
+      {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium">{error}</div>}
+      {successMessage && <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-medium">{successMessage}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Escolha do Barbeiro */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">1. Escolha o Barbeiro</label>
+          <label className="block text-sm font-bold text-gray-800 mb-2">1. Escolha o Barbeiro</label>
           <div className="grid grid-cols-2 gap-4">
             {BARBERS.map((barber) => (
               <button
@@ -152,14 +143,14 @@ export function BookingWidget({ onAppointmentCreated }) {
                   setSelectedBarber(barber.id);
                   setSelectedTime("");
                 }}
-                className={`p-4 rounded-lg border text-left transition-all ${
+                className={`p-4 rounded-xl border text-left transition-all ${
                   selectedBarber === barber.id
-                    ? "border-black bg-black text-white"
-                    : "border-gray-200 hover:border-gray-400 bg-gray-50"
+                    ? "border-black bg-black text-white shadow-md scale-[1.01]"
+                    : "border-gray-200 hover:border-gray-400 bg-gray-50 text-gray-800"
                 }`}
               >
-                <div className="font-bold text-lg">{barber.name}</div>
-                <div className={`text-xs ${selectedBarber === barber.id ? "text-gray-300" : "text-gray-500"}`}>
+                <div className="font-bold text-base">{barber.name}</div>
+                <div className={`text-xs mt-1 ${selectedBarber === barber.id ? "text-gray-300" : "text-gray-500"}`}>
                   {barber.specialty}
                 </div>
               </button>
@@ -167,26 +158,37 @@ export function BookingWidget({ onAppointmentCreated }) {
           </div>
         </div>
 
-        {/* Escolha do Serviço */}
+        {/* Escolha do Serviço — Lista Estilizada para evitar esconder opções */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">2. Escolha o Serviço</label>
-          <select
-            value={selectedService}
-            onChange={(e) => setSelectedService(Number(e.target.value))}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black bg-white"
-          >
-            {SERVICES.map((service) => (
-              <option key={service.id} value={service.id}>
-                {service.name} — {service.prefix ? `${service.prefix} ` : ""}{BRL(service.price)}
-              </option>
-            ))}
-          </select>
+          <label className="block text-sm font-bold text-gray-800 mb-2">2. Escolha o Serviço</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-2 border border-gray-200 rounded-xl bg-gray-50">
+            {SERVICES.map((service) => {
+              const isSelected = selectedService === service.id;
+              return (
+                <button
+                  type="button"
+                  key={service.id}
+                  onClick={() => setSelectedService(service.id)}
+                  className={`p-3 rounded-lg border text-left flex justify-between items-center transition-all ${
+                    isSelected
+                      ? "border-black bg-black text-white font-semibold shadow-sm"
+                      : "border-gray-200 bg-white hover:bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  <span className="text-sm">{service.name}</span>
+                  <span className={`text-xs font-bold whitespace-nowrap ml-2 ${isSelected ? "text-gray-200" : "text-gray-600"}`}>
+                    {service.prefix ? `${service.prefix} ` : ""}{BRL(service.price)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Data e Hora Automatizada */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Data e Horários Disponíveis */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">3. Data do Atendimento</label>
+            <label className="block text-sm font-bold text-gray-800 mb-2">3. Data do Atendimento</label>
             <input
               type="date"
               value={selectedDate}
@@ -194,55 +196,67 @@ export function BookingWidget({ onAppointmentCreated }) {
                 setSelectedDate(e.target.value);
                 setSelectedTime("");
               }}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
+              className="w-full p-3.5 border border-gray-300 rounded-xl focus:outline-none focus:border-black bg-white text-gray-800 font-medium"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">4. Horários Disponíveis (40 min)</label>
-            <select
-              value={selectedTime}
-              onChange={(e) => setSelectedTime(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black bg-white"
-              required
-              disabled={!selectedDate}
-            >
-              <option value="">{!selectedDate ? "Selecione a data primeiro" : "Selecione um horário livre"}</option>
-              {ALL_TIME_SLOTS.map((time) => {
-                const isBooked = bookedSlots.includes(time);
-                return (
-                  <option key={time} value={time} disabled={isBooked} className={isBooked ? "text-gray-400 bg-gray-100" : ""}>
-                    {time} {isBooked ? "— (Ocupado)" : "— (Disponível)"}
-                  </option>
-                );
-              })}
-            </select>
+            <label className="block text-sm font-bold text-gray-800 mb-2">4. Horários (Intervalo de 40 min)</label>
+            {!selectedDate ? (
+              <div className="p-3.5 border border-gray-200 rounded-xl bg-gray-100 text-gray-500 text-sm text-center">
+                Selecione a data primeiro
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-xl bg-gray-50">
+                {ALL_TIME_SLOTS.map((time) => {
+                  const isBooked = bookedSlots.includes(time);
+                  const isSelected = selectedTime === time;
+                  return (
+                    <button
+                      type="button"
+                      key={time}
+                      disabled={isBooked}
+                      onClick={() => setSelectedTime(time)}
+                      className={`py-2 px-1 text-sm rounded-lg border text-center font-medium transition-all ${
+                        isBooked
+                          ? "bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed line-through"
+                          : isSelected
+                          ? "bg-black text-white border-black shadow-sm"
+                          : "bg-white border-gray-200 text-gray-800 hover:border-black"
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Dados do Cliente */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Seu Nome</label>
+            <label className="block text-sm font-bold text-gray-800 mb-2">Seu Nome</label>
             <input
               type="text"
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               placeholder="Ex: João Silva"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
+              className="w-full p-3.5 border border-gray-300 rounded-xl focus:outline-none focus:border-black text-gray-800"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Seu Telefone / WhatsApp</label>
+            <label className="block text-sm font-bold text-gray-800 mb-2">Seu Telefone / WhatsApp</label>
             <input
               type="text"
               value={clientPhone}
               onChange={(e) => setClientPhone(e.target.value)}
               placeholder="Ex: (11) 99999-9999"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
+              className="w-full p-3.5 border border-gray-300 rounded-xl focus:outline-none focus:border-black text-gray-800"
               required
             />
           </div>
@@ -251,7 +265,7 @@ export function BookingWidget({ onAppointmentCreated }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors disabled:opacity-50"
+          className="w-full bg-black text-white py-4 rounded-xl font-bold text-base hover:bg-gray-800 transition-colors shadow-lg disabled:opacity-50 mt-4"
         >
           {loading ? "A processar agendamento..." : "Confirmar Agendamento"}
         </button>

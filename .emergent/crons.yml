@@ -1,9 +1,0 @@
-crons:
-  - name: lembrete-vespera
-    description: "Envia email de lembrete aos clientes com horário marcado para o dia seguinte (18h BRT)"
-    cron: "0 18 * * *"
-    timezone: "America/Sao_Paulo"
-    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
-    endpoint: "{{BASE_URL}}/api/cron/reminders"
-    method: POST
-    enabled: true

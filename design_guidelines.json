@@ -1,0 +1,175 @@
+{
+  "project_name": "Studio01 Barbearia",
+  "app_type": "hybrid_fullstack",
+  "persona_and_style": {
+    "identity": "E1 Creative Direction for Studio01 Barbearia (Brazil)",
+    "aesthetic": "Monochrome Razor-Sharp Industrial Craft. Stark high-contrast deep blacks (#0B0B0D, #121216), pure crisp steel white (#FFFFFF, #F4F4F6), tactical zinc borders (#27272A, #3F3F46), with warm metallic amber/gold micro-accents (#D4AF37 / #EAB308) strictly for active badges and VIP highlights.",
+    "anti_patterns": [
+      "NO AI-slop purple or neon blue gradients (#7351B7 strictly forbidden)",
+      "NO generic centered Bootstrap layout",
+      "NO low-contrast gray text on dark gray (all body copy meets APCA / WCAG AA minimum 4.5:1)",
+      "NO completely transparent dropdowns or unbacked headers over dark imagery",
+      "NO default template feel — custom logo SVG with 01 razor/comb emblem and dotted underline accent"
+    ]
+  },
+  "typography": {
+    "brand_heading": "Cabinet Grotesk / Barlow Condensed / Montserrat, uppercase, bold tracking-wider (tight/punchy)",
+    "h1_hero": "text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white",
+    "h2_section": "text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-white",
+    "h3_card_title": "text-xl sm:text-2xl font-bold uppercase text-zinc-100",
+    "h4_service_item": "text-lg sm:text-xl font-bold tracking-normal text-zinc-200",
+    "body": "text-sm sm:text-base font-normal text-zinc-300 leading-relaxed font-sans",
+    "label_overline": "text-xs font-mono uppercase tracking-[0.25em] text-zinc-400 font-semibold",
+    "price_tag": "font-mono font-bold text-lg sm:text-xl text-white"
+  },
+  "colors": {
+    "background_deep": "#09090B",
+    "background_surface": "#121215",
+    "background_card": "#18181B",
+    "background_card_elevated": "#222226",
+    "border_subtle": "#27272A",
+    "border_bright": "#3F3F46",
+    "foreground_primary": "#FFFFFF",
+    "foreground_secondary": "#A1A1AA",
+    "foreground_muted": "#71717A",
+    "accent_razor": "#FFFFFF",
+    "accent_amber_gold": "#D4AF37",
+    "badge_available": "#22C55E",
+    "badge_blocked": "#EF4444",
+    "badge_booked": "#F59E0B",
+    "whatsapp_green": "#25D366"
+  },
+  "branding_logo_spec": {
+    "brand_name": "STUDIO01 BARBEARIA",
+    "cnpj": "CNPJ 62.773.547/0001-87",
+    "emblem": "Integrated SVG emblem representing '01' where '0' is a precision straight-razor contour and '1' is a barber comb with crisp teeth, accompanied by bold uppercase typography and an industrial dotted accent bar beneath.",
+    "location_badge": "Barbearia em São Paulo / Brasil"
+  },
+  "services_catalog": [
+    { "id": "barba", "name": "Barba", "price": 15, "starting_at": true, "formatted_price": "A partir de R$ 15", "duration_minutes": 30, "category": "Barba" },
+    { "id": "cavanhaque", "name": "Cavanhaque", "price": 15, "starting_at": false, "formatted_price": "R$ 15", "duration_minutes": 20, "category": "Barba" },
+    { "id": "coloracao", "name": "Coloração", "price": 60, "starting_at": false, "formatted_price": "R$ 60", "duration_minutes": 50, "category": "Química" },
+    { "id": "corte_simples", "name": "Corte Simples", "price": 20, "starting_at": false, "formatted_price": "R$ 20", "duration_minutes": 40, "category": "Cabelo" },
+    { "id": "corte_degrade", "name": "Corte Degradê", "price": 40, "starting_at": false, "formatted_price": "R$ 40", "duration_minutes": 40, "category": "Cabelo" },
+    { "id": "corte_tesoura", "name": "Corte Todo na Tesoura", "price": 25, "starting_at": false, "formatted_price": "R$ 25", "duration_minutes": 40, "category": "Cabelo" },
+    { "id": "corte_degrade_tesoura", "name": "Corte Degradê + Tesoura", "price": 45, "starting_at": false, "formatted_price": "R$ 45", "duration_minutes": 50, "category": "Cabelo" },
+    { "id": "pezinho", "name": "Pézinho / Acabamento", "price": 10, "starting_at": false, "formatted_price": "R$ 10", "duration_minutes": 15, "category": "Acabamento" },
+    { "id": "pigmentacao", "name": "Pigmentação", "price": 20, "starting_at": false, "formatted_price": "R$ 20", "duration_minutes": 30, "category": "Química" },
+    { "id": "platinado_nevou", "name": "Platinado / Nevou", "price": 60, "starting_at": false, "formatted_price": "R$ 60", "duration_minutes": 60, "category": "Química" },
+    { "id": "reflexo_luzes", "name": "Reflexo / Luzes", "price": 60, "starting_at": false, "formatted_price": "R$ 60", "duration_minutes": 60, "category": "Química" },
+    { "id": "sobrancelha", "name": "Sobrancelha", "price": 10, "starting_at": false, "formatted_price": "R$ 10", "duration_minutes": 15, "category": "Acabamento" }
+  ],
+  "operating_hours_rules": {
+    "days": ["Terça-feira", "Quarta-feira", "Quinta-feira"],
+    "open_time": "09:00",
+    "close_time": "19:00",
+    "slot_interval_minutes": 40,
+    "slots_schedule": [
+      "09:00", "09:40", "10:20", "11:00", "11:40",
+      "13:00", "13:40", "14:20", "15:00", "15:40", "16:20", "17:00", "17:40", "18:20"
+    ],
+    "after_hours_rule": "Dias de pico após 19:00: Atendimento exclusivo por ordem de chegada (fila balcão)."
+  },
+  "barbers": [
+    { "id": "b1", "name": "Mestre Barbeiro Rodrigo '01'", "specialty": "Degradê Navalhado & Fade Freestyle", "avatar": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?crop=entropy&cs=srgb&fm=jpg&q=85" },
+    { "id": "b2", "name": "Lucas Silva", "specialty": "Tesoura Clássica, Barboterapia & Pigmentação", "avatar": "https://images.unsplash.com/photo-1647140655214-e4a2d914971f?crop=entropy&cs=srgb&fm=jpg&q=85" },
+    { "id": "b3", "name": "Matheus 'Nevou' Costa", "specialty": "Platinados, Luzes & Acabamentos", "avatar": "https://images.pexels.com/photos/3998413/pexels-photo-3998413.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" }
+  ],
+  "image_urls": {
+    "hero_banner": {
+      "url": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "description": "Premium industrial barbershop leather chair in atmospheric dark setting with warm brick and steel accents",
+      "placement": "Hero section dynamic background with 40% black overlay and subtle grid texture"
+    },
+    "shop_atmosphere": {
+      "url": "https://images.unsplash.com/photo-1621645582931-d1d3e6564943?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "description": "Barber chair workstation with mirror and industrial lighting",
+      "placement": "About / Studio experience section"
+    },
+    "razor_precision": {
+      "url": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "description": "Tattooed barber crafting clean razor lineup on beard and hairline",
+      "placement": "Service highlights & Craftsmanship bento card"
+    },
+    "scissors_texture": {
+      "url": "https://images.unsplash.com/photo-1657105052497-f996284ffff8?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "description": "Barber precision cut using shears and comb styling",
+      "placement": "Services menu feature card"
+    },
+    "client_experience": {
+      "url": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "description": "Customer relaxing in comfortable barbershop chair",
+      "placement": "Booking confirmation and testimonial section"
+    }
+  },
+  "key_features_and_architecture": {
+    "header_nav": {
+      "sticky_with_glass": true,
+      "style": "bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/80",
+      "items": [
+        { "label": "Serviços & Preços", "href": "#servicos" },
+        { "label": "Agendar Horário", "href": "#agendar" },
+        { "label": "Barbeiros", "href": "#barbeiros" },
+        { "label": "Horários", "href": "#horarios" },
+        { "label": "Meus Agendamentos", "href": "#meus-agendamentos" }
+      ],
+      "actions": ["Login / Cadastro Modal", "Área Administrativa (Admin) Button", "WhatsApp Direto CTA"]
+    },
+    "booking_flow_widget": {
+      "step_1": "Select one or multiple services with instant dynamic price and total duration calculation",
+      "step_2": "Select preferred Barber (or 'Primeiro Disponível')",
+      "step_3": "Select Date (calendar with Tuesdays, Wednesdays, Thursdays highlighted; other days marked with notice)",
+      "step_4": "Interactive Time-Slot Grid (40-minute intervals: 09:00, 09:40, 10:20... with instant live status: 'Disponível', 'Ocupado', 'Bloqueado')",
+      "step_5": "Client Identification / One-Click Login or Quick Registration (Nome, Telefone WhatsApp, Email, Senha)",
+      "step_6": "Instant Confirmation Screen with generated protocol code + direct 'Abrir no WhatsApp' pre-filled message + Calendar Add link"
+    },
+    "admin_dashboard_panel": {
+      "protected": true,
+      "default_passcode": "admin01",
+      "features": [
+        "Interactive Daily / Weekly Agenda View with time-grid per Barber",
+        "Block / Unblock specific slots (e.g., Almoço, Manutenção, Ausência)",
+        "Confirm / Reschedule / Cancel appointments with instant state updates",
+        "Metrics: Total agendamentos hoje, Faturamento previsto (R$), Taxa de ocupação",
+        "Export / Filter by Barber, Status (Confirmado, Pendente, Concluído, Cancelado)"
+      ]
+    },
+    "client_portal": {
+      "features": [
+        "Login with email & password",
+        "View upcoming and past appointments with service details and barber name",
+        "Cancel or reschedule active appointments up to 2 hours prior",
+        "Quick rebook previous cuts"
+      ]
+    }
+  },
+  "interactive_rules_and_testid": {
+    "data_testids_required": [
+      "navbar-brand-logo",
+      "nav-services-link",
+      "nav-booking-link",
+      "nav-my-appointments-btn",
+      "nav-admin-login-btn",
+      "service-card-select-btn",
+      "barber-card-select-btn",
+      "booking-calendar-day",
+      "time-slot-btn",
+      "booking-summary-total-price",
+      "booking-submit-btn",
+      "whatsapp-confirm-link",
+      "admin-login-input-password",
+      "admin-login-submit-btn",
+      "admin-slot-block-toggle-btn",
+      "admin-appointment-cancel-btn",
+      "admin-appointment-confirm-btn"
+    ]
+  },
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Build with high contrast: dark slate/obsidian canvas (#09090B), razor zinc borders (#27272A), crisp white headings, and selective amber gold badges.",
+    "Do NOT use generic purple or cyan AI gradients. Every container must feel tactile, architectural, and clean.",
+    "Use generous padding (p-6, p-8, py-20, py-28) to give the layout breathing room.",
+    "Ensure all interactive elements have data-testid attributes according to the specification.",
+    "Provide Portuguese (pt-BR) copy natively, reflecting the authentic Brazilian barbershop vernacular (e.g., 'Corte Degradê', 'Platinado Nevou', 'Pézinho', 'Barba a partir de R$15', 'CNPJ 62.773.547/0001-87').",
+    "Include sound functional fallback data in localStorage or FastAPI backend so slots update instantly when booked or blocked in the admin panel."
+  ]
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { api, BRL, formatApiError } from "@/lib/api";
 
 const BARBERS = [
@@ -21,7 +21,7 @@ const SERVICES = [
   { id: 12, name: "Reflexo / Luzes", price: 60.00, prefix: "a partir de" },
 ];
 
-// Gera horários das 09:00 às 19:00 com intervalos aproximados de 40 minutos
+// Gera horários das 09:00 às 19:00 com intervalos de 40 minutos
 const generateTimeSlots = () => {
   const slots = [];
   let startMinutes = 9 * 60; // 09:00
@@ -38,7 +38,7 @@ const generateTimeSlots = () => {
   return slots;
 };
 
-const TIME_SLOTS = generateTimeSlots();
+const ALL_TIME_SLOTS = generateTimeSlots();
 
 export function BookingWidget({ onAppointmentCreated }) {
   const [selectedBarber, setSelectedBarber] = useState(BARBERS[0].id);
@@ -47,9 +47,36 @@ export function BookingWidget({ onAppointmentCreated }) {
   const [selectedTime, setSelectedTime] = useState("");
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  
+  const [bookedSlots, setBookedSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  // Atualiza os horários ocupados sempre que muda de barbeiro ou de data
+  useEffect(() => {
+    if (!selectedDate) {
+      setBookedSlots([]);
+      return;
+    }
+    const fetchBookedSlots = async () => {
+      try {
+        const res = await api.get(`/appointments?date=${selectedDate}&barber_id=${selectedBarber}`);
+        // Se a API retornar uma lista de agendamentos para este dia/barbeiro
+        const appointments = res.data || [];
+        const timesOcupados = appointments.map((app) => app.time);
+        setBookedSlots(timesOcupados);
+      } catch (err) {
+        // Fallback local caso a API não tenha endpoint específico
+        const allSaved = JSON.parse(localStorage.getItem("studio01_appointments") || "[]");
+        const ocupados = allSaved
+          .filter((app) => String(app.barber_id) === String(selectedBarber) && app.date === selectedDate)
+          .map((app) => app.time);
+        setBookedSlots(ocupados);
+      }
+    };
+    fetchBookedSlots();
+  }, [selectedDate, selectedBarber]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,6 +85,12 @@ export function BookingWidget({ onAppointmentCreated }) {
 
     if (!selectedDate || !selectedTime || !clientName || !clientPhone) {
       setError("Por favor, preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    // Validação extra de segurança local
+    if (bookedSlots.includes(selectedTime)) {
+      setError("Este horário já foi reservado. Por favor, escolha outro.");
       return;
     }
 
@@ -79,7 +112,15 @@ export function BookingWidget({ onAppointmentCreated }) {
       };
 
       await api.post("/appointments", payload);
-      setSuccessMessage("Agendamento realizado com sucesso!");
+
+      // Registo local automático no localStorage para sincronizar a agenda instantaneamente
+      const existing = JSON.parse(localStorage.getItem("studio01_appointments") || "[]");
+      localStorage.setItem("studio01_appointments", JSON.stringify([...existing, payload]));
+
+      // Atualiza os horários ocupados no ecrã
+      setBookedSlots([...bookedSlots, selectedTime]);
+
+      setSuccessMessage(`Agendamento confirmado para ${selectedDate} às ${selectedTime}!`);
       setClientName("");
       setClientPhone("");
       setSelectedTime("");
@@ -93,7 +134,7 @@ export function BookingWidget({ onAppointmentCreated }) {
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Faça o seu Agendamento</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Agenda Automatizada — Studio 01</h2>
 
       {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
       {successMessage && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">{successMessage}</div>}
@@ -107,7 +148,10 @@ export function BookingWidget({ onAppointmentCreated }) {
               <button
                 type="button"
                 key={barber.id}
-                onClick={() => setSelectedBarber(barber.id)}
+                onClick={() => {
+                  setSelectedBarber(barber.id);
+                  setSelectedTime("");
+                }}
                 className={`p-4 rounded-lg border text-left transition-all ${
                   selectedBarber === barber.id
                     ? "border-black bg-black text-white"
@@ -139,33 +183,40 @@ export function BookingWidget({ onAppointmentCreated }) {
           </select>
         </div>
 
-        {/* Data e Hora */}
+        {/* Data e Hora Automatizada */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">3. Data</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">3. Data do Atendimento</label>
             <input
               type="date"
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
+              onChange={(e) => {
+                setSelectedDate(e.target.value);
+                setSelectedTime("");
+              }}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">4. Horário (Intervalos de 40min)</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">4. Horários Disponíveis (40 min)</label>
             <select
               value={selectedTime}
               onChange={(e) => setSelectedTime(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black bg-white"
               required
+              disabled={!selectedDate}
             >
-              <option value="">Selecione um horário</option>
-              {TIME_SLOTS.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
+              <option value="">{!selectedDate ? "Selecione a data primeiro" : "Selecione um horário livre"}</option>
+              {ALL_TIME_SLOTS.map((time) => {
+                const isBooked = bookedSlots.includes(time);
+                return (
+                  <option key={time} value={time} disabled={isBooked} className={isBooked ? "text-gray-400 bg-gray-100" : ""}>
+                    {time} {isBooked ? "— (Ocupado)" : "— (Disponível)"}
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>
@@ -202,7 +253,7 @@ export function BookingWidget({ onAppointmentCreated }) {
           disabled={loading}
           className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors disabled:opacity-50"
         >
-          {loading ? "A agendar..." : "Confirmar Agendamento"}
+          {loading ? "A processar agendamento..." : "Confirmar Agendamento"}
         </button>
       </form>
     </div>

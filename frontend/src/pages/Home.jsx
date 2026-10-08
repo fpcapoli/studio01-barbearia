@@ -9,8 +9,6 @@ import { BookingWidget } from "@/components/BookingWidget";
 import { MyAppointments } from "@/components/MyAppointments";
 import { useNavigate } from "react-router-dom";
 
-const HERO = "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?crop=entropy&cs=srgb&fm=jpg&q=85";
-const ATM = "https://images.unsplash.com/photo-1621645582931-d1d3e6564943?crop=entropy&cs=srgb&fm=jpg&q=85";
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -81,11 +79,13 @@ export default function Home() {
       </header>
 
       {/* HERO */}
-      <section className="relative flex min-h-screen items-center overflow-hidden pt-20">
+      <section className="relative flex min-h-screen items-center overflow-hidden bg-black pt-20">
         <div className="absolute inset-0">
-          <img src={HERO} alt="" className="h-full w-full object-cover opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/40" />
-          <div className="absolute inset-0 bg-grain" />
+          <img src={LOGO_URL} alt="Studio01 Barbearia" data-testid="hero-logo-bg"
+            style={{ maskImage: "radial-gradient(ellipse at center, black 50%, transparent 78%)", WebkitMaskImage: "radial-gradient(ellipse at center, black 50%, transparent 78%)" }}
+            className="absolute left-1/2 top-1/2 w-[180%] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-30 lg:left-[30%] lg:w-[70%] lg:translate-x-0 lg:opacity-100" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent lg:via-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-zinc-950 to-transparent" />
         </div>
         <div className="relative mx-auto grid w-full max-w-7xl gap-10 px-5 lg:grid-cols-2">
           <div>
@@ -114,13 +114,6 @@ export default function Home() {
                 <span className="flex items-center gap-2"><ShieldCheck size={14} className="text-amber-400" /> CNPJ 62.773.547/0001-87</span>
               </div>
             </motion.div>
-          </div>
-          <div className="hidden items-center justify-center lg:flex">
-            <motion.img
-              src={LOGO_URL} alt="Studio01 Barbearia"
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }}
-              className="w-80 rounded-xl ring-1 ring-zinc-800"
-            />
           </div>
         </div>
       </section>

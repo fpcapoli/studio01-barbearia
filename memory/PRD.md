@@ -6,7 +6,7 @@ Barbershop "Studio01 Barbearia" (CNPJ 62.773.547/0001-87) needs a website where 
 ## User Choices
 - Auth: Login with account (email + password, JWT via httpOnly cookie)
 - Admin panel password-protected (owner: filipe.capoli@gmail.com)
-- Hours: Tuesday–Thursday 09:00–19:00, 40-min slots (peak days after 19:00 = first-come at counter)
+- Hours: Tuesday–Saturday 09:00–19:00 (updated 2026-06), 40-min slots (peak days after 19:00 = first-come at counter)
 - Confirmation: on-screen + WhatsApp link
 - Multiple barbers (3 seeded)
 

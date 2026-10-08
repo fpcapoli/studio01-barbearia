@@ -110,7 +110,7 @@ export default function Home() {
                 </button>
               </div>
               <div className="mt-10 flex flex-wrap gap-6 font-mono text-xs text-zinc-400">
-                <span className="flex items-center gap-2"><Clock size={14} className="text-amber-400" /> Ter a Qui • 09h–19h</span>
+                <span className="flex items-center gap-2"><Clock size={14} className="text-amber-400" /> Ter a Sáb • 09h–19h</span>
                 <span className="flex items-center gap-2"><ShieldCheck size={14} className="text-amber-400" /> CNPJ 62.773.547/0001-87</span>
               </div>
             </motion.div>
@@ -201,7 +201,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-5 text-center">
           <Logo />
           <div className="my-2 h-[5px] w-40 dotted-rule" />
-          <p className="font-mono text-xs text-zinc-500">Ter a Qui • 09:00 às 19:00 • CNPJ 62.773.547/0001-87</p>
+          <p className="font-mono text-xs text-zinc-500">Ter a Sáb • 09:00 às 19:00 • CNPJ 62.773.547/0001-87</p>
           <a href="https://wa.me/5511999999999" target="_blank" rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-md border border-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:border-[#25D366] hover:text-[#25D366]">
             <MessageCircle size={16} /> Fale no WhatsApp

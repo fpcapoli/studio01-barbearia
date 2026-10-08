@@ -49,7 +49,7 @@ SERVICE_MAP = {s["id"]: s for s in SERVICES}
 
 SLOTS = ["09:00", "09:40", "10:20", "11:00", "11:40", "13:00", "13:40",
          "14:20", "15:00", "15:40", "16:20", "17:00", "17:40", "18:20"]
-OPEN_WEEKDAYS = {1, 2, 3}  # Tue, Wed, Thu (Mon=0)
+OPEN_WEEKDAYS = {1, 2, 3, 4, 5}  # Tue..Sat (Mon=0)
 
 DEFAULT_BARBERS = [
     {"id": "b1", "name": "Rodrigo '01'", "specialty": "Degradê Navalhado & Fade Freestyle",
@@ -180,7 +180,8 @@ async def get_barbers():
 async def get_config():
     return {"slots": SLOTS, "open_weekdays": sorted(OPEN_WEEKDAYS),
             "cnpj": "62.773.547/0001-87",
-            "after_hours": "Dias de pico após 19:00: atendimento por ordem de chegada (fila no balcão)."}
+            "after_hours": "Dias de pico após 19:00: atendimento por ordem de chegada (fila no balcão).",
+            "days_label": "Terça a Sábado"}
 
 # ---------------- Availability ----------------
 async def _taken_map(date_str: str):
@@ -201,7 +202,7 @@ async def availability(date: str, barber_id: str = "any"):
         raise HTTPException(status_code=400, detail="Data inválida")
     if d.weekday() not in OPEN_WEEKDAYS:
         return {"open": False, "slots": [],
-                "message": "Fechado neste dia. Atendemos de terça a quinta, 09:00–19:00."}
+                "message": "Fechado neste dia. Atendemos de terça a sábado, 09:00–19:00."}
     barbers = await db.barbers.find({}, {"_id": 0}).to_list(100)
     barber_ids = [b["id"] for b in barbers]
     booked, blocked = await _taken_map(date)

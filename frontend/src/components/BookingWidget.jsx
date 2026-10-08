@@ -31,7 +31,7 @@ export function BookingWidget({ services, barbers, onRequireAuth }) {
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(null);
 
-  const days = useMemo(() => nextDays(21).filter((d) => [2, 3, 4].includes(d.getDay())), []);
+  const days = useMemo(() => nextDays(21).filter((d) => [2, 3, 4, 5, 6].includes(d.getDay())), []);
   const total = selected.reduce((s, id) => s + (services.find((x) => x.id === id)?.price || 0), 0);
   const duration = selected.reduce((s, id) => s + (services.find((x) => x.id === id)?.duration || 0), 0);
 

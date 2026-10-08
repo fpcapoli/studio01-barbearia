@@ -1,42 +1,30 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { api, formatApiError } from "@/lib/api";
+import React, { createContext, useContext, useState, useCallback } from "react";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // null = checking, false = anon, obj = user
-  const [checked, setChecked] = useState(false);
+  const [user, setUser] = useState({ name: "Cliente", email: "cliente@studio01.com" });
+  const [checked, setChecked] = useState(true);
 
   const refresh = useCallback(async () => {
-    try {
-      const { data } = await api.get("/auth/me");
-      setUser(data);
-    } catch {
-      setUser(false);
-    } finally {
-      setChecked(true);
-    }
+    setUser({ name: "Cliente", email: "cliente@studio01.com" });
+    setChecked(true);
   }, []);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
   const login = async (email, password) => {
-    const { data } = await api.post("/auth/login", { email, password });
-    setUser(data);
-    return data;
+    const mockUser = { name: email.split("@")[0], email };
+    setUser(mockUser);
+    return { data: mockUser };
   };
 
   const register = async (payload) => {
-    const { data } = await api.post("/auth/register", payload);
-    setUser(data);
-    return data;
+    const mockUser = { name: payload.name || "Cliente", email: payload.email };
+    setUser(mockUser);
+    return { data: mockUser };
   };
 
   const logout = async () => {
-    try { await api.post("/auth/logout"); } catch {}
-    setUser(false);
+    setUser(null);
   };
 
   return (
@@ -47,4 +35,8 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
-export { formatApiError };
+export const formatApiError = (detail) => {
+  if (detail == null) return "Algo deu errado. Tente novamente.";
+  if (typeof detail === "string") return detail;
+  return String(detail);
+};

@@ -1,0 +1,37 @@
+{
+  "summary": "First-finish smoke test of Studio01 Barbearia booking app. Backend endpoints (services, barbers, config, auth, availability, appointments, admin) all pass. Frontend booking flow and admin panel both work end-to-end.",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "passed": [
+    "GET /api/services returns 12 services with correct schema",
+    "GET /api/barbers returns 3 barbers (Rodrigo '01', Lucas Silva, Matheus 'Nevou' Costa)",
+    "GET /api/config returns 14 slots (09:00-18:20 @40min) and open_weekdays [1,2,3] and CNPJ",
+    "POST /api/auth/register creates client user, sets cookie, returns role=client",
+    "GET /api/auth/me with cookie returns authenticated user",
+    "POST /api/auth/login as admin returns role=admin",
+    "POST /api/auth/logout invalidates cookie (subsequent /auth/me returns 401)",
+    "GET /api/availability for Tuesday returns open=true with 14 slots",
+    "GET /api/availability for Monday returns open=false with closed message",
+    "POST /api/appointments creates appointment with protocol ST01-XXXXXX, total_price, duration, status=confirmado",
+    "barber_id='any' auto-assigns a free barber (b1 Rodrigo)",
+    "After booking b1 09:00, availability for barber_id=b1 shows that slot as 'booked'",
+    "GET /api/appointments/me lists client's own appointments",
+    "PATCH /api/appointments/{id}/cancel returns {ok:true}",
+    "Admin-only endpoints return 403 for client (GET /api/admin/appointments, /api/admin/metrics)",
+    "Admin GET /api/admin/appointments?date returns appointments list",
+    "Admin GET /api/admin/metrics returns {total, revenue, active, occupancy}",
+    "POST /api/admin/blocks toggles slot to blocked and verified via availability",
+    "Frontend home loads with Studio01 branding, 12 service cards, 4 barber cards (3 barbers + 'any'), CNPJ in footer",
+    "Frontend booking flow: service -> barber -> calendar day (9 highlighted days) -> 14 time slots -> submit opens auth modal when not logged in",
+    "Frontend /admin shows restricted screen with 'ENTRAR COMO ADMIN' button for non-admin",
+    "After admin login, /admin renders Painel Admin with metrics cards and 14x3 schedule grid (42 slot toggle buttons) and admin-date-input"
+  ],
+  "failed": [],
+  "action_items": [],
+  "notes": [
+    "Minor: POST /api/appointments silently ignores unknown service_ids (sent 'corte-simples' with dash; backend expects underscore 'corte_simples'). Not a bug since frontend uses correct ids, but server could validate and return 400. Low priority.",
+    "Availability for barber_id='any' continues to show a time as 'available' even after one barber is booked at that time (because other barbers remain free). This appears intentional."
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}

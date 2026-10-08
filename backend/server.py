@@ -129,6 +129,10 @@ class AppointmentIn(BaseModel):
 class StatusIn(BaseModel):
     status: str
 
+class RescheduleIn(BaseModel):
+    date: str
+    time: str
+
 class BlockIn(BaseModel):
     barber_id: str
     date: str
@@ -293,6 +297,32 @@ async def my_appointments(user: dict = Depends(get_current_user)):
         a["id"] = str(a["_id"]); a.pop("_id", None)
         out.append(a)
     return out
+
+@api.patch("/appointments/{apt_id}/reschedule")
+async def reschedule_appointment(apt_id: str, body: RescheduleIn, user: dict = Depends(get_current_user)):
+    apt = await db.appointments.find_one({"_id": ObjectId(apt_id)})
+    if not apt or apt["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Agendamento não encontrado")
+    if apt["status"] != "confirmado":
+        raise HTTPException(status_code=400, detail="Só é possível reagendar horários confirmados")
+    try:
+        d = datetime.strptime(body.date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Data inválida")
+    if d.weekday() not in OPEN_WEEKDAYS or body.time not in SLOTS:
+        raise HTTPException(status_code=400, detail="Dia ou horário indisponível")
+    now = datetime.now(timezone.utc) - timedelta(hours=3)
+    if datetime.combine(d, datetime.strptime(body.time, "%H:%M").time()) <= now.replace(tzinfo=None):
+        raise HTTPException(status_code=400, detail="Escolha um horário futuro")
+    clash = await db.appointments.find_one({"_id": {"$ne": apt["_id"]}, "barber_id": apt["barber_id"],
+                                            "date": body.date, "time": body.time, "status": {"$ne": "cancelado"}})
+    blocked = await db.blocks.find_one({"barber_id": apt["barber_id"], "date": body.date, "time": body.time})
+    if clash or blocked:
+        raise HTTPException(status_code=409, detail="Este horário não está disponível")
+    await db.appointments.update_one({"_id": apt["_id"]}, {"$set": {
+        "date": body.date, "time": body.time, "reminder_sent": False,
+        "rescheduled_at": datetime.now(timezone.utc).isoformat()}})
+    return {"ok": True, "date": body.date, "time": body.time}
 
 @api.patch("/appointments/{apt_id}/cancel")
 async def cancel_appointment(apt_id: str, user: dict = Depends(get_current_user)):

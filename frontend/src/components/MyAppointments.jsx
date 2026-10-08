@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { MessageCircle, X, Clock, Calendar } from "lucide-react";
+import { MessageCircle, X, Clock, Calendar, CalendarClock } from "lucide-react";
 import { api, BRL, formatApiError } from "@/lib/api";
 import { toast } from "sonner";
+import { RescheduleModal } from "@/components/RescheduleModal";
 
 const STATUS_STYLE = {
   confirmado: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
@@ -13,6 +14,7 @@ const STATUS_STYLE = {
 export function MyAppointments() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [rescheduling, setRescheduling] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -63,14 +65,24 @@ export function MyAppointments() {
           <div className="mt-4 flex items-center justify-between border-t border-zinc-800 pt-4">
             <span className="font-mono text-lg font-bold text-amber-400">{BRL(a.total_price)}</span>
             {a.status === "confirmado" && (
-              <button onClick={() => cancel(a.id)} data-testid="cancel-appointment-btn"
-                className="flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-red-500 hover:text-red-400">
-                <X size={13} /> Cancelar
-              </button>
+              <div className="flex gap-2">
+                <button onClick={() => setRescheduling(a)} data-testid="reschedule-appointment-btn"
+                  className="flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-amber-400 hover:text-amber-400">
+                  <CalendarClock size={13} /> Reagendar
+                </button>
+                <button onClick={() => cancel(a.id)} data-testid="cancel-appointment-btn"
+                  className="flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:border-red-500 hover:text-red-400">
+                  <X size={13} /> Cancelar
+                </button>
+              </div>
             )}
           </div>
         </div>
       ))}
+      {rescheduling && (
+        <RescheduleModal apt={rescheduling} onClose={() => setRescheduling(null)}
+          onDone={() => { setRescheduling(null); load(); }} />
+      )}
     </div>
   );
 }

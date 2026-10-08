@@ -229,7 +229,7 @@ export function BookingWidget({ services, barbers, onRequireAuth }) {
                   </AnimatePresence>
                 </div>
                 <p className="mt-3 font-mono text-[11px] text-zinc-600">
-                  A grade se atualiza automaticamente • dias de pico após 19:00: ordem de chegada no balcão.
+                  Dias de pico após 19:00: atendimento por ordem de chegada no balcão.
                 </p>
               </>
             )}

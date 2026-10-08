@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/Logo";
 import { AuthModal } from "@/components/AuthModal";
 import { AdminBarbers } from "@/components/AdminBarbers";
+import { AdminGallery } from "@/components/AdminGallery";
 import { toast } from "sonner";
 
 const SLOTS = ["09:00","09:40","10:20","11:00","11:40","13:00","13:40","14:20","15:00","15:40","16:20","17:00","17:40","18:20"];
@@ -18,6 +19,7 @@ export default function Admin() {
   const [appointments, setAppointments] = useState([]);
   const [barbers, setBarbers] = useState([]);
   const [blocks, setBlocks] = useState([]);
+  const [gallery, setGallery] = useState([]);
   const [metrics, setMetrics] = useState({ total: 0, revenue: 0, active: 0, occupancy: 0 });
   const [authOpen, setAuthOpen] = useState(false);
 
@@ -26,13 +28,14 @@ export default function Admin() {
   const load = useCallback(async () => {
     if (!isAdmin) return;
     try {
-      const [a, b, bl, m] = await Promise.all([
+      const [a, b, bl, m, g] = await Promise.all([
         api.get("/admin/appointments", { params: { date } }),
         api.get("/barbers"),
         api.get("/admin/blocks", { params: { date } }),
         api.get("/admin/metrics", { params: { date } }),
+        api.get("/gallery"),
       ]);
-      setAppointments(a.data); setBarbers(b.data); setBlocks(bl.data); setMetrics(m.data);
+      setAppointments(a.data); setBarbers(b.data); setBlocks(bl.data); setMetrics(m.data); setGallery(g.data);
     } catch (e) {
       toast.error(formatApiError(e.response?.data?.detail));
     }
@@ -155,6 +158,9 @@ export default function Admin() {
         {/* barbers management */}
         <h2 className="mb-4 mt-10 font-heading text-2xl font-extrabold uppercase text-white">Barbeiros</h2>
         <AdminBarbers barbers={barbers} onChange={load} />
+
+        <h2 className="mb-4 mt-10 font-heading text-2xl font-extrabold uppercase text-white">Galeria de Cortes</h2>
+        <AdminGallery items={gallery} onChange={load} />
 
         {/* appointment list */}
         <h2 className="mb-4 mt-10 font-heading text-2xl font-extrabold uppercase text-white">Agendamentos do dia</h2>

@@ -7,6 +7,7 @@ import { Logo, LOGO_URL } from "@/components/Logo";
 import { AuthModal } from "@/components/AuthModal";
 import { BookingWidget } from "@/components/BookingWidget";
 import { MyAppointments } from "@/components/MyAppointments";
+import { Gallery } from "@/components/Gallery";
 import { useNavigate } from "react-router-dom";
 
 
@@ -14,6 +15,7 @@ export default function Home() {
   const { user, logout } = useAuth();
   const [services, setServices] = useState([]);
   const [barbers, setBarbers] = useState([]);
+  const [gallery, setGallery] = useState([]);
   const [authOpen, setAuthOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ export default function Home() {
   useEffect(() => {
     api.get("/services").then((r) => setServices(r.data));
     api.get("/barbers").then((r) => setBarbers(r.data));
+    api.get("/gallery").then((r) => setGallery(r.data));
   }, []);
 
   const go = (id) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
@@ -28,6 +31,7 @@ export default function Home() {
   const navItems = [
     ["servicos", "Serviços"],
     ["agendar", "Agendar"],
+    ["galeria", "Galeria"],
     ["barbeiros", "Barbeiros"],
     ["meus-agendamentos", "Meus Agendamentos"],
     ["localizacao", "Localização"],
@@ -96,10 +100,13 @@ export default function Home() {
                 <MapPin size={13} /> Rua Guará, 10 • Penha Circular – RJ
               </div>
               <h1 className="font-heading text-5xl font-black uppercase leading-[0.9] tracking-tight text-white sm:text-6xl lg:text-7xl">
-                Seu corte,<br />no seu <span className="text-amber-400">horário</span>.
+                Bem-vindo à<br /><span className="text-amber-400">Studio01</span>.
               </h1>
-              <p className="mt-6 max-w-md text-base text-zinc-300">
-                Escolha o serviço, o barbeiro e o horário direto pelo site. Grade de horários que se atualiza automaticamente, sem telefone, sem espera.
+              <p className="mt-6 max-w-md text-base text-zinc-300" data-testid="hero-welcome-text">
+                Aqui cada corte é feito com calma, capricho e atenção nos detalhes. Escolha seu horário e venha tranquilo.
+              </p>
+              <p className="mt-3 max-w-md border-l-2 border-amber-400 pl-3 text-sm text-zinc-400" data-testid="hero-delay-note">
+                Às vezes pode atrasar um pouquinho, porque cada cliente recebe o tempo que merece. Mas nem tanto, fica tranquilo.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <button onClick={() => go("agendar")} data-testid="hero-book-btn"
@@ -152,6 +159,14 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-5">
           <SectionHead eyebrow="Agende Online" title="Marque seu horário" />
           <BookingWidget services={services} barbers={barbers} onRequireAuth={() => setAuthOpen(true)} />
+        </div>
+      </section>
+
+      {/* GALLERY */}
+      <section id="galeria" className="relative border-t border-zinc-900 bg-zinc-950 py-24">
+        <div className="mx-auto max-w-7xl px-5">
+          <SectionHead eyebrow="Nosso Trabalho" title="Galeria de Cortes" />
+          <Gallery items={gallery} />
         </div>
       </section>
 

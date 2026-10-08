@@ -5,7 +5,7 @@ import os
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, BackgroundTasks, UploadFile, File
+from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, BackgroundTasks, UploadFile, File, Form
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import DuplicateKeyError
@@ -417,8 +417,7 @@ async def admin_metrics(date: str, admin: dict = Depends(require_admin)):
 DEFAULT_AVATAR = ""
 ALLOWED_IMG = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/heic": "heic", "image/heif": "heif"}
 
-@api.post("/admin/upload-photo")
-async def admin_upload_photo(file: UploadFile = File(...), admin: dict = Depends(require_admin)):
+async def _save_image(file: UploadFile, folder: str) -> str:
     ext = ALLOWED_IMG.get(file.content_type or "")
     if not ext:
         raise HTTPException(status_code=400, detail="Envie uma imagem JPG, PNG ou WEBP")
@@ -428,7 +427,7 @@ async def admin_upload_photo(file: UploadFile = File(...), admin: dict = Depends
     is_img = data[:3] == b"\xff\xd8\xff" or data[:8] == b"\x89PNG\r\n\x1a\n" or (data[:4] == b"RIFF" and data[8:12] == b"WEBP") or data[4:8] == b"ftyp"
     if not is_img:
         raise HTTPException(status_code=400, detail="Arquivo não é uma imagem válida")
-    path = f"{APP_NAME}/barbers/{uuid.uuid4()}.{ext}"
+    path = f"{APP_NAME}/{folder}/{uuid.uuid4()}.{ext}"
     try:
         result = await asyncio.to_thread(put_object, path, data, file.content_type)
     except Exception as e:
@@ -437,7 +436,33 @@ async def admin_upload_photo(file: UploadFile = File(...), admin: dict = Depends
     await db.files.insert_one({"storage_path": result["path"], "content_type": file.content_type,
                                "size": len(data), "is_deleted": False,
                                "created_at": datetime.now(timezone.utc).isoformat()})
-    return {"url": f"/api/files/{result['path']}"}
+    return f"/api/files/{result['path']}"
+
+@api.post("/admin/upload-photo")
+async def admin_upload_photo(file: UploadFile = File(...), admin: dict = Depends(require_admin)):
+    return {"url": await _save_image(file, "barbers")}
+
+@api.get("/gallery")
+async def get_gallery():
+    return await db.gallery.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+
+@api.post("/admin/gallery")
+async def admin_add_gallery(file: UploadFile = File(...), caption: str = Form(""),
+                            admin: dict = Depends(require_admin)):
+    url = await _save_image(file, "gallery")
+    doc = {"id": uuid.uuid4().hex, "url": url, "caption": caption.strip()[:120],
+           "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.gallery.insert_one(dict(doc))
+    return doc
+
+@api.delete("/admin/gallery/{item_id}")
+async def admin_delete_gallery(item_id: str, admin: dict = Depends(require_admin)):
+    item = await db.gallery.find_one({"id": item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Foto não encontrada")
+    await db.gallery.delete_one({"id": item_id})
+    await db.files.update_one({"storage_path": item["url"].removeprefix("/api/files/")}, {"$set": {"is_deleted": True}})
+    return {"ok": True}
 
 @api.get("/files/{path:path}")
 async def serve_file(path: str):

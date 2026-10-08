@@ -36,6 +36,8 @@ Barbershop "Studio01 Barbearia" (CNPJ 62.773.547/0001-87) needs a website where 
 
 - Location Rua Guará 10, Penha Circular – RJ; barbers Capoli & Novaes; public "Painel Admin" links (nav + footer) — DONE
 
+- Barber photo upload (Emergent Object Storage), Google Maps location section, per-barber days/hours — DONE (iteration_4 100%)
+
 ## Backlog / Next
 - P1: Real WhatsApp number of the shop (currently placeholder 5511999999999)
 - P1: Admin CRUD for barbers (add/remove/edit)

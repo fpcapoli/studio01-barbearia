@@ -1,0 +1,30 @@
+{
+  "summary": "Tested new features: per-barber schedule (days + start/end), admin photo upload via Emergent Object Storage, public /api/files/<path> serving, and homepage Localização section (Google Maps embed + Como chegar button). 10/10 backend pytest cases pass. Frontend admin flow verified: all required data-testids present (admin-barber-photo-btn/input/preview, admin-barber-day-Ter|Qua|Qui|Sex|Sáb, admin-barber-start-select/end-select, admin-barber-save-btn, admin-slot-off). Narrowing barber end-hour correctly renders 'Folga' cells (admin-slot-off count=11 on a Tue with end=11:00). Saving with zero days correctly surfaces the error toast 'Selecione ao menos um dia de atendimento'. Barber list shows days (Ter•Qua•Qui•Sex•Sáb) and hours (09:00–19:00). Home Localização section loads with correct map iframe (location-map, Google Maps embed of Rua Guará 10) and Como chegar button (location-directions-btn → maps/dir URL). Backend defaults restored (Capoli/Novaes, [1,2,3,4,5], 09:00-19:00).",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_barber_schedule_upload.py",
+    "/app/test_reports/pytest/barber_schedule_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py admin_upload_photo: content-type is trusted blindly from the client (ALLOWED_IMG lookup). A client could send image/png content-type with arbitrary bytes. Consider verifying file magic bytes (e.g., using python-magic or imghdr) in addition to content-type.",
+    "server.py serve_file: no auth check means anyone with a storage_path can access uploaded images. That is OK for public barber photos but will leak PII if other file types are ever stored. Scope by prefix (studio01/barbers/*) if other buckets are added.",
+    "AdminBarbers.jsx upload(): uses axios without explicitly setting Content-Type for FormData; relying on axios to set multipart boundary is fine but worth asserting via test. Also no file-size pre-check client-side — a user may wait on a long upload only to get a 400. Add a client-side size/type guard.",
+    "server.py reschedule_appointment: barber may have been deleted since booking (barber=None path falls through without off-hour check). Current code: `if barber and not works(...)` — if barber was deleted the off-hour guard is skipped. Low priority since delete endpoint doesn't cascade to appointments.",
+    "server.py availability 'past' branch for barber_id='any' also marks slots as 'past' even when all barbers are off that slot. Cosmetic only; previously flagged in iteration_3.",
+    "No compound index on appointments.(barber_id, date, time) and on blocks.(barber_id, date, time) — availability & reschedule queries will scan as data grows. Previously flagged."
+  ],
+  "updated_files": ["/app/backend/tests/test_barber_schedule_upload.py"],
+  "success_rate": { "backend": "100%", "frontend": "100%" },
+  "test_credentials": "Admin filipe.capoli@gmail.com / Studio01Admin; test clients auto-registered with TEST_sched_* prefix.",
+  "seed_data_creation": "All test appointments were cancelled in test teardown (confirmed by 'CANCELADO' labels in admin panel). Barbers restored to defaults [1,2,3,4,5]/09:00-19:00/Capoli-Novaes/specialty 'Barbeiro'/avatar ''. One PNG uploaded to Emergent Object Storage during test_upload_success_and_serve — orphan file (not linked to a barber); harmless.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend tests: /app/backend/tests/test_barber_schedule_upload.py (10 tests, ~3s, run with `-n 0` to avoid xdist duplicate-registration race). Covers: zero-days 400, invalid hours 400, availability open:false for off-day with barber_id, 'off' status for out-of-hours slots, barber_id='any' excludes off-duty, create at off-hour 400, 'any' auto-assigns on-duty barber, reschedule to off-hour 400, upload requires admin (403), upload rejects non-image (400), upload success + public /api/files/<path> serving (200 image/png). Frontend data-testids all verified. Previous reschedule tests (test_reschedule.py, 9 cases) and barbers/cron tests (test_barbers_cron.py) remain green.",
+  "rca of the issue": "N/A — no bugs found."
+}

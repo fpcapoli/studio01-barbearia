@@ -30,6 +30,7 @@ export function AdminBarbers({ barbers, onChange }) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
+    if (file.size > 8 * 1024 * 1024) { toast.error("Imagem muito grande (máx. 8MB)."); return; }
     setUploading(true);
     try {
       const fd = new FormData();

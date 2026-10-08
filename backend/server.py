@@ -425,6 +425,9 @@ async def admin_upload_photo(file: UploadFile = File(...), admin: dict = Depends
     data = await file.read()
     if len(data) > 8 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Imagem muito grande (máx. 8MB)")
+    is_img = data[:3] == b"\xff\xd8\xff" or data[:8] == b"\x89PNG\r\n\x1a\n" or (data[:4] == b"RIFF" and data[8:12] == b"WEBP") or data[4:8] == b"ftyp"
+    if not is_img:
+        raise HTTPException(status_code=400, detail="Arquivo não é uma imagem válida")
     path = f"{APP_NAME}/barbers/{uuid.uuid4()}.{ext}"
     try:
         result = await asyncio.to_thread(put_object, path, data, file.content_type)

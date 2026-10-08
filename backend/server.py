@@ -12,7 +12,7 @@ from pymongo.errors import DuplicateKeyError
 from emailer import send_email, reminder_html
 import hmac
 from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional, Annotated
+from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 import bcrypt

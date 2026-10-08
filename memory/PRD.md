@@ -27,6 +27,11 @@ Barbershop "Studio01 Barbearia" (CNPJ 62.773.547/0001-87) needs a website where 
 - Admin dashboard: metrics, per-barber time grid, block toggle, status management — DONE
 - Tested: 100% backend + frontend pass (iteration_1)
 
+- Real shop WhatsApp 5521972016917 — DONE
+- Admin barbers CRUD (add/edit/remove) — DONE
+- Day-before email reminder (Resend managed + cron 18:00 America/Sao_Paulo → POST /api/cron/reminders) — DONE
+- Tested: iteration_2 100% pass
+
 ## Backlog / Next
 - P1: Real WhatsApp number of the shop (currently placeholder 5511999999999)
 - P1: Admin CRUD for barbers (add/remove/edit)

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Scissors, MapPin, Clock, ShieldCheck, MessageCircle, LogOut, CalendarCheck, Menu, X, Lock } from "lucide-react";
+import { Scissors, MapPin, Clock, ShieldCheck, MessageCircle, LogOut, CalendarCheck, Menu, X, Lock, Instagram } from "lucide-react";
 import { api, BRL, imgSrc } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Logo, LOGO_URL } from "@/components/Logo";
@@ -8,6 +8,8 @@ import { AuthModal } from "@/components/AuthModal";
 import { BookingWidget } from "@/components/BookingWidget";
 import { MyAppointments } from "@/components/MyAppointments";
 import { Gallery } from "@/components/Gallery";
+
+const INSTAGRAM = "https://www.instagram.com/studio01barber/";
 import { useNavigate } from "react-router-dom";
 
 
@@ -100,10 +102,10 @@ export default function Home() {
                 <MapPin size={13} /> Rua Guará, 10 • Penha Circular – RJ
               </div>
               <h1 className="font-heading text-5xl font-black uppercase leading-[0.9] tracking-tight text-white sm:text-6xl lg:text-7xl">
-                Bem-vindo à<br /><span className="text-amber-400">Studio01</span>.
+                Bem-vindo ao<br /><span className="text-amber-400">Studio 01</span>!
               </h1>
-              <p className="mt-6 max-w-md text-base text-zinc-300" data-testid="hero-welcome-text">
-                Aqui cada corte é feito com calma, capricho e atenção nos detalhes. Escolha seu horário e venha tranquilo.
+              <p className="mt-6 max-w-md font-heading text-2xl font-bold uppercase text-white" data-testid="hero-welcome-text">
+                Como podemos renovar seu visual hoje?
               </p>
               <p className="mt-3 max-w-md border-l-2 border-amber-400 pl-3 text-sm text-zinc-400" data-testid="hero-delay-note">
                 Às vezes pode atrasar um pouquinho, porque cada cliente recebe o tempo que merece. Mas nem tanto, fica tranquilo.
@@ -121,6 +123,8 @@ export default function Home() {
               <div className="mt-10 flex flex-wrap gap-6 font-mono text-xs text-zinc-400">
                 <span className="flex items-center gap-2"><Clock size={14} className="text-amber-400" /> Ter a Sáb • 09h–19h</span>
                 <span className="flex items-center gap-2"><ShieldCheck size={14} className="text-amber-400" /> CNPJ 62.773.547/0001-87</span>
+                <a href={INSTAGRAM} target="_blank" rel="noreferrer" data-testid="hero-instagram-link"
+                  className="flex items-center gap-2 transition hover:text-amber-400"><Instagram size={14} className="text-amber-400" /> @studio01barber</a>
               </div>
             </motion.div>
           </div>
@@ -238,6 +242,10 @@ export default function Home() {
                 className="flex w-full items-center justify-center gap-2 rounded-md border border-zinc-700 py-3 font-heading font-bold uppercase tracking-wide text-white hover:border-[#25D366] hover:text-[#25D366]">
                 <MessageCircle size={16} /> WhatsApp
               </a>
+              <a href={INSTAGRAM} target="_blank" rel="noreferrer" data-testid="location-instagram-link"
+                className="flex w-full items-center justify-center gap-2 rounded-md border border-zinc-700 py-3 font-heading font-bold uppercase tracking-wide text-white hover:border-pink-500 hover:text-pink-400">
+                <Instagram size={16} /> @studio01barber
+              </a>
             </div>
           </div>
         </div>
@@ -257,10 +265,16 @@ export default function Home() {
             className="font-mono text-[11px] uppercase tracking-wider text-zinc-600 hover:text-amber-400">
             Painel dos Administradores
           </button>
-          <a href="https://wa.me/5521972016917" target="_blank" rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-md border border-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:border-[#25D366] hover:text-[#25D366]">
-            <MessageCircle size={16} /> Fale no WhatsApp
-          </a>
+          <div className="flex flex-wrap justify-center gap-2">
+            <a href="https://wa.me/5521972016917" target="_blank" rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-md border border-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:border-[#25D366] hover:text-[#25D366]">
+              <MessageCircle size={16} /> Fale no WhatsApp
+            </a>
+            <a href={INSTAGRAM} target="_blank" rel="noreferrer" data-testid="footer-instagram-link"
+              className="inline-flex items-center gap-2 rounded-md border border-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:border-pink-500 hover:text-pink-400">
+              <Instagram size={16} /> @studio01barber
+            </a>
+          </div>
           <p className="mt-4 font-mono text-[11px] text-zinc-700">© {new Date().getFullYear()} Studio01 Barbearia</p>
         </div>
       </footer>

@@ -38,6 +38,9 @@ Barbershop "Studio01 Barbearia" (CNPJ 62.773.547/0001-87) needs a website where 
 
 - Barber photo upload (Emergent Object Storage), Google Maps location section, per-barber days/hours — DONE (iteration_4 100%)
 
+- Galeria de cortes (admin upload/delete, lightbox) — DONE (iteration_5 100%)
+- Hero "Bem-vindo ao Studio 01! Como podemos renovar seu visual hoje?" + Instagram @studio01barber links (hero, localização, footer) — DONE
+
 ## Backlog / Next
 - P1: Real WhatsApp number of the shop (currently placeholder 5511999999999)
 - P1: Admin CRUD for barbers (add/remove/edit)

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Scissors, MapPin, Clock, ShieldCheck, MessageCircle, LogOut, CalendarCheck, Menu, X } from "lucide-react";
+import { Scissors, MapPin, Clock, ShieldCheck, MessageCircle, LogOut, CalendarCheck, Menu, X, Lock } from "lucide-react";
 import { api, BRL } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Logo, LOGO_URL } from "@/components/Logo";
@@ -47,15 +47,15 @@ export default function Home() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            {(!user || user.role === "admin") && (
+              <button onClick={() => navigate("/admin")} data-testid="nav-admin-link"
+                className="flex items-center gap-1.5 rounded-md border border-amber-400/50 px-3 py-1.5 font-mono text-xs uppercase text-amber-400 hover:bg-amber-400/10">
+                <Lock size={12} /> <span className="hidden sm:inline">Painel Admin</span>
+              </button>
+            )}
             {user ? (
               <>
                 <span className="hidden text-sm text-zinc-400 sm:inline">Olá, {user.name.split(" ")[0]}</span>
-                {user.role === "admin" && (
-                  <button onClick={() => navigate("/admin")} data-testid="nav-admin-link"
-                    className="rounded-md border border-amber-400/50 px-3 py-1.5 font-mono text-xs uppercase text-amber-400 hover:bg-amber-400/10">
-                    Admin
-                  </button>
-                )}
                 <button onClick={logout} data-testid="nav-logout-btn" className="rounded-md p-2 text-zinc-400 hover:text-white"><LogOut size={18} /></button>
               </>
             ) : (
@@ -74,6 +74,7 @@ export default function Home() {
             {navItems.map(([id, label]) => (
               <button key={id} onClick={() => go(id)} className="block w-full py-2 text-left font-mono text-sm uppercase text-zinc-300">{label}</button>
             ))}
+            <button onClick={() => navigate("/admin")} className="block w-full py-2 text-left font-mono text-sm uppercase text-amber-400">Painel Admin</button>
           </div>
         )}
       </header>
@@ -90,8 +91,8 @@ export default function Home() {
         <div className="relative mx-auto grid w-full max-w-7xl gap-10 px-5 lg:grid-cols-2">
           <div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/60 px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.25em] text-amber-400">
-                <MapPin size={13} /> Barbearia • Brasil
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/60 px-4 py-1.5 font-mono text-[11px] uppercase tracking-wider text-amber-400 sm:tracking-[0.25em]" data-testid="hero-address">
+                <MapPin size={13} /> Rua Guará, 10 • Penha Circular – RJ
               </div>
               <h1 className="font-heading text-5xl font-black uppercase leading-[0.9] tracking-tight text-white sm:text-6xl lg:text-7xl">
                 Seu corte,<br />no seu <span className="text-amber-400">horário</span>.
@@ -161,7 +162,7 @@ export default function Home() {
             {barbers.map((b) => (
               <div key={b.id} className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
                 <div className="aspect-[4/3] overflow-hidden">
-                  <img src={b.avatar} alt={b.name} className="h-full w-full object-cover grayscale transition duration-500 hover:grayscale-0" />
+                  <img src={b.avatar || LOGO_URL} alt={b.name} className={`h-full w-full transition duration-500 ${b.avatar ? "object-cover grayscale hover:grayscale-0" : "object-contain bg-black"}`} />
                 </div>
                 <div className="p-5">
                   <h3 className="font-heading text-xl font-bold uppercase text-white">{b.name}</h3>
@@ -195,6 +196,14 @@ export default function Home() {
           <Logo />
           <div className="my-2 h-[5px] w-40 dotted-rule" />
           <p className="font-mono text-xs text-zinc-500">Ter a Sáb • 09:00 às 19:00 • CNPJ 62.773.547/0001-87</p>
+          <a href="https://www.google.com/maps/search/?api=1&query=Rua+Guar%C3%A1+10+Penha+Circular+Rio+de+Janeiro" target="_blank" rel="noreferrer"
+            data-testid="footer-address-link" className="flex items-center gap-2 text-sm text-zinc-300 hover:text-amber-400">
+            <MapPin size={15} /> Rua Guará, 10 – Penha Circular, Rio de Janeiro – RJ
+          </a>
+          <button onClick={() => navigate("/admin")} data-testid="footer-admin-link"
+            className="font-mono text-[11px] uppercase tracking-wider text-zinc-600 hover:text-amber-400">
+            Painel dos Administradores
+          </button>
           <a href="https://wa.me/5521972016917" target="_blank" rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-md border border-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:border-[#25D366] hover:text-[#25D366]">
             <MessageCircle size={16} /> Fale no WhatsApp

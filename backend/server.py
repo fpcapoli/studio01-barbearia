@@ -55,12 +55,8 @@ SLOTS = ["09:00", "09:40", "10:20", "11:00", "11:40", "13:00", "13:40",
 OPEN_WEEKDAYS = {1, 2, 3, 4, 5}  # Tue..Sat (Mon=0)
 
 DEFAULT_BARBERS = [
-    {"id": "b1", "name": "Rodrigo '01'", "specialty": "Degradê Navalhado & Fade Freestyle",
-     "avatar": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?crop=entropy&cs=srgb&fm=jpg&q=85"},
-    {"id": "b2", "name": "Lucas Silva", "specialty": "Tesoura Clássica, Barboterapia & Pigmentação",
-     "avatar": "https://images.unsplash.com/photo-1647140655214-e4a2d914971f?crop=entropy&cs=srgb&fm=jpg&q=85"},
-    {"id": "b3", "name": "Matheus 'Nevou' Costa", "specialty": "Platinados, Luzes & Acabamentos",
-     "avatar": "https://images.pexels.com/photos/3998413/pexels-photo-3998413.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"},
+    {"id": "capoli", "name": "Capoli", "specialty": "Barbeiro", "avatar": ""},
+    {"id": "novaes", "name": "Novaes", "specialty": "Barbeiro", "avatar": ""},
 ]
 
 # ---------------- Auth helpers ----------------
@@ -377,7 +373,7 @@ async def admin_metrics(date: str, admin: dict = Depends(require_admin)):
     occupancy = round((active / capacity) * 100) if capacity else 0
     return {"total": total, "revenue": revenue, "active": active, "occupancy": occupancy}
 
-DEFAULT_AVATAR = "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?crop=entropy&cs=srgb&fm=jpg&q=85"
+DEFAULT_AVATAR = ""
 
 @api.post("/admin/barbers")
 async def admin_create_barber(body: BarberIn, admin: dict = Depends(require_admin)):

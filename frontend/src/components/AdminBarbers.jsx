@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2, Save, X } from "lucide-react";
 import { api, formatApiError } from "@/lib/api";
 import { toast } from "sonner";
+import { LOGO_URL } from "@/components/Logo";
 
 const EMPTY = { name: "", specialty: "", avatar: "" };
 
@@ -40,7 +41,7 @@ export function AdminBarbers({ barbers, onChange }) {
       <div className="grid gap-3 sm:grid-cols-2">
         {barbers.map((b) => (
           <div key={b.id} className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 p-3" data-testid="admin-barber-item">
-            <img src={b.avatar} alt={b.name} className="h-14 w-14 rounded-md object-cover" />
+            <img src={b.avatar || LOGO_URL} alt={b.name} className="h-14 w-14 rounded-md bg-black object-cover" />
             <div className="min-w-0 flex-1">
               <div className="truncate font-heading text-lg font-bold uppercase text-white">{b.name}</div>
               <div className="truncate text-xs text-zinc-400">{b.specialty}</div>

@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-const SHOP_PHONE = "5511999999999"; // WhatsApp da barbearia
+const SHOP_PHONE = "5521972016917";
 
 function nextDays(count = 21) {
   const out = [];

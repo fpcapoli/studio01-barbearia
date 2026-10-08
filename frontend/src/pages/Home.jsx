@@ -202,7 +202,7 @@ export default function Home() {
           <Logo />
           <div className="my-2 h-[5px] w-40 dotted-rule" />
           <p className="font-mono text-xs text-zinc-500">Ter a Sáb • 09:00 às 19:00 • CNPJ 62.773.547/0001-87</p>
-          <a href="https://wa.me/5511999999999" target="_blank" rel="noreferrer"
+          <a href="https://wa.me/5521972016917" target="_blank" rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-md border border-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:border-[#25D366] hover:text-[#25D366]">
             <MessageCircle size={16} /> Fale no WhatsApp
           </a>

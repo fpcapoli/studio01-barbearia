@@ -5,6 +5,7 @@ import { api, BRL, formatApiError } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/Logo";
 import { AuthModal } from "@/components/AuthModal";
+import { AdminBarbers } from "@/components/AdminBarbers";
 import { toast } from "sonner";
 
 const SLOTS = ["09:00","09:40","10:20","11:00","11:40","13:00","13:40","14:20","15:00","15:40","16:20","17:00","17:40","18:20"];
@@ -141,6 +142,10 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
+
+        {/* barbers management */}
+        <h2 className="mb-4 mt-10 font-heading text-2xl font-extrabold uppercase text-white">Barbeiros</h2>
+        <AdminBarbers barbers={barbers} onChange={load} />
 
         {/* appointment list */}
         <h2 className="mb-4 mt-10 font-heading text-2xl font-extrabold uppercase text-white">Agendamentos do dia</h2>

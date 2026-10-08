@@ -5,9 +5,12 @@ import os
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends
+from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, BackgroundTasks
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo.errors import DuplicateKeyError
+from emailer import send_email, reminder_html
+import hmac
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional, Annotated
 from datetime import datetime, timezone, timedelta
@@ -130,6 +133,11 @@ class BlockIn(BaseModel):
     barber_id: str
     date: str
     time: str
+
+class BarberIn(BaseModel):
+    name: str = Field(min_length=1)
+    specialty: str = ""
+    avatar: str = ""
 
 # ---------------- Auth endpoints ----------------
 @api.post("/auth/register")
@@ -338,6 +346,68 @@ async def admin_metrics(date: str, admin: dict = Depends(require_admin)):
     capacity = barbers * len(SLOTS)
     occupancy = round((active / capacity) * 100) if capacity else 0
     return {"total": total, "revenue": revenue, "active": active, "occupancy": occupancy}
+
+DEFAULT_AVATAR = "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?crop=entropy&cs=srgb&fm=jpg&q=85"
+
+@api.post("/admin/barbers")
+async def admin_create_barber(body: BarberIn, admin: dict = Depends(require_admin)):
+    doc = {"id": "b" + uuid.uuid4().hex[:8], "name": body.name.strip(),
+           "specialty": body.specialty.strip(), "avatar": body.avatar.strip() or DEFAULT_AVATAR}
+    await db.barbers.insert_one(dict(doc))
+    return doc
+
+@api.put("/admin/barbers/{barber_id}")
+async def admin_update_barber(barber_id: str, body: BarberIn, admin: dict = Depends(require_admin)):
+    upd = {"name": body.name.strip(), "specialty": body.specialty.strip(),
+           "avatar": body.avatar.strip() or DEFAULT_AVATAR}
+    r = await db.barbers.update_one({"id": barber_id}, {"$set": upd})
+    if r.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Barbeiro não encontrado")
+    await db.appointments.update_many({"barber_id": barber_id}, {"$set": {"barber_name": upd["name"]}})
+    return {"id": barber_id, **upd}
+
+@api.delete("/admin/barbers/{barber_id}")
+async def admin_delete_barber(barber_id: str, admin: dict = Depends(require_admin)):
+    r = await db.barbers.delete_one({"id": barber_id})
+    if r.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Barbeiro não encontrado")
+    await db.blocks.delete_many({"barber_id": barber_id})
+    return {"ok": True}
+
+# ---------------- Cron: day-before reminders ----------------
+async def send_reminders():
+    tomorrow = ((datetime.now(timezone.utc) - timedelta(hours=3)) + timedelta(days=1)).strftime("%Y-%m-%d")
+    site = os.environ["FRONTEND_URL"] + "/#meus-agendamentos"
+    sent = 0
+    async for a in db.appointments.find({"date": tomorrow, "status": "confirmado", "reminder_sent": {"$ne": True}}):
+        try:
+            await send_email(to=a["client_email"], subject="Lembrete: seu horário na Studio01 é amanhã",
+                             html=reminder_html(a, site))
+            await db.appointments.update_one({"_id": a["_id"]}, {"$set": {"reminder_sent": True}})
+            sent += 1
+        except Exception as e:
+            logger.error(f"Reminder failed for {a.get('protocol')}: {e}")
+    logger.info(f"Reminders sent for {tomorrow}: {sent}")
+
+@api.post("/cron/reminders")
+async def cron_reminders(request: Request, background: BackgroundTasks):
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer ") or not hmac.compare_digest(auth[7:], os.environ["WEBHOOK_CRON_SECRET"]):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    run_id = request.headers.get("X-Webhook-Id")
+    if not run_id:
+        try:
+            run_id = (await request.json()).get("run_id")
+        except Exception:
+            run_id = None
+    run_id = run_id or uuid.uuid4().hex
+    try:
+        await db.cron_runs.insert_one({"_id": run_id, "at": datetime.now(timezone.utc).isoformat()})
+    except DuplicateKeyError:
+        return {"status": "duplicate"}
+    background.add_task(send_reminders)
+    return {"status": "accepted"}
 
 app.include_router(api)
 

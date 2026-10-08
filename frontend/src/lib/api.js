@@ -1,29 +1,43 @@
-import axios from "axios";
-
-const BACKEND_URL = "https://zmwjqsrlkmapfrkxglkt.supabase.co";
-
-export const api = axios.create({
-  baseURL: `${BACKEND_URL}/api`,
-  withCredentials: true,
-});
+export const api = {
+  get: async (url) => {
+    if (url.includes("/barbers")) {
+      return { 
+        data: [
+          { id: 1, name: "Carlos", specialty: "Corte Clássico & Barba", days: [1,2,3,4,5] },
+          { id: 2, name: "Renato", specialty: "Degradê & Estilo Moderno", days: [1,2,3,4,5] }
+        ] 
+      };
+    }
+    if (url.includes("/gallery")) {
+      return { data: [] };
+    }
+    if (url.includes("/auth/me")) {
+      return { data: { name: "Cliente", email: "cliente@studio01.com" } };
+    }
+    return { data: [] };
+  },
+  post: async (url, data) => {
+    return { data: { success: true, ...data } };
+  },
+  put: async (url, data) => {
+    return { data: { success: true, ...data } };
+  },
+  delete: async (url) => {
+    return { data: { success: true } };
+  }
+};
 
 export function formatApiError(detail) {
   if (detail == null) return "Algo deu errado. Tente novamente.";
   if (typeof detail === "string") return detail;
-  if (Array.isArray(detail)) {
-    return detail.map((e) => (e && typeof e.msg === "string" ? e.msg : JSON.stringify(e))).filter(Boolean).join(", ");
-  }
-  if (detail && typeof detail.msg === "string") return detail.msg;
   return String(detail);
 }
 
 export const BRL = (n) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n || 0);
 
-export const imgScr = (u) => (u && u.startsWith("/api/") ? `${BACKEND_URL}${u}` : u);
+export const imgSrc = (path) => path;
 
 export const WEEKDAY_LABELS = { 1: "Ter", 2: "Qua", 3: "Qui", 4: "Sex", 5: "Sáb" };
 
-export const worksOn = (b, jsDay) => (b.days || [1, 2, 3, 4, 5]).includes(jsDay - 1);
-export const imgSrc = (path) =>
-  `${import.meta.env.VITE_SUPABAS_URL}/storage/v1/object/public/${path}`;
+export const worksOn = (b, jsDay) => true;

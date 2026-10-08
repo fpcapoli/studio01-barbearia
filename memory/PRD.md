@@ -32,6 +32,8 @@ Barbershop "Studio01 Barbearia" (CNPJ 62.773.547/0001-87) needs a website where 
 - Day-before email reminder (Resend managed + cron 18:00 America/Sao_Paulo → POST /api/cron/reminders) — DONE
 - Tested: iteration_2 100% pass
 
+- Client reschedule (same barber, new date/time, live grid) — DONE (iteration_3 100%)
+
 ## Backlog / Next
 - P1: Real WhatsApp number of the shop (currently placeholder 5511999999999)
 - P1: Admin CRUD for barbers (add/remove/edit)

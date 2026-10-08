@@ -300,7 +300,7 @@ async def my_appointments(user: dict = Depends(get_current_user)):
 
 @api.patch("/appointments/{apt_id}/reschedule")
 async def reschedule_appointment(apt_id: str, body: RescheduleIn, user: dict = Depends(get_current_user)):
-    apt = await db.appointments.find_one({"_id": ObjectId(apt_id)})
+    apt = await db.appointments.find_one({"_id": ObjectId(apt_id)}) if ObjectId.is_valid(apt_id) else None
     if not apt or apt["user_id"] != user["id"]:
         raise HTTPException(status_code=404, detail="Agendamento não encontrado")
     if apt["status"] != "confirmado":

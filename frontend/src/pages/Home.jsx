@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Scissors, MapPin, Clock, ShieldCheck, MessageCircle, LogOut, CalendarCheck, Menu, X, Lock } from "lucide-react";
-import { api, BRL } from "@/lib/api";
+import { api, BRL, imgSrc } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Logo, LOGO_URL } from "@/components/Logo";
 import { AuthModal } from "@/components/AuthModal";
@@ -30,6 +30,7 @@ export default function Home() {
     ["agendar", "Agendar"],
     ["barbeiros", "Barbeiros"],
     ["meus-agendamentos", "Meus Agendamentos"],
+    ["localizacao", "Localização"],
   ];
 
   return (
@@ -162,7 +163,7 @@ export default function Home() {
             {barbers.map((b) => (
               <div key={b.id} className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
                 <div className="aspect-[4/3] overflow-hidden">
-                  <img src={b.avatar || LOGO_URL} alt={b.name} className={`h-full w-full transition duration-500 ${b.avatar ? "object-cover grayscale hover:grayscale-0" : "object-contain bg-black"}`} />
+                  <img src={imgSrc(b.avatar) || LOGO_URL} alt={b.name} className={`h-full w-full transition duration-500 ${b.avatar ? "object-cover grayscale hover:grayscale-0" : "object-contain bg-black"}`} />
                 </div>
                 <div className="p-5">
                   <h3 className="font-heading text-xl font-bold uppercase text-white">{b.name}</h3>
@@ -187,6 +188,43 @@ export default function Home() {
               <button onClick={() => setAuthOpen(true)} className="mt-4 rounded-md bg-white px-5 py-2.5 font-heading font-bold uppercase text-zinc-950 hover:bg-amber-400">Entrar</button>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* LOCATION */}
+      <section id="localizacao" className="relative border-t border-zinc-900 py-24">
+        <div className="mx-auto max-w-7xl px-5">
+          <SectionHead eyebrow="Como Chegar" title="Localização" />
+          <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+            <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900">
+              <iframe
+                title="Mapa Studio01 Barbearia" data-testid="location-map"
+                src="https://www.google.com/maps?q=Rua+Guar%C3%A1,+10+-+Penha+Circular,+Rio+de+Janeiro+-+RJ&output=embed"
+                className="h-[360px] w-full grayscale invert-[0.9] hue-rotate-180 contrast-[0.9]"
+                loading="lazy" referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            <div className="h-fit space-y-5 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">Endereço</div>
+                <div className="mt-1 font-heading text-2xl font-bold uppercase text-white">Rua Guará, 10</div>
+                <div className="text-zinc-400">Penha Circular, Rio de Janeiro – RJ</div>
+              </div>
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">Horário</div>
+                <div className="text-zinc-200">Terça a Sábado • 09:00 às 19:00</div>
+              </div>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=Rua+Guar%C3%A1+10+Penha+Circular+Rio+de+Janeiro+RJ"
+                target="_blank" rel="noreferrer" data-testid="location-directions-btn"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-amber-400 py-3 font-heading font-bold uppercase tracking-wide text-zinc-950 transition hover:bg-amber-300">
+                <MapPin size={16} /> Como chegar
+              </a>
+              <a href="https://wa.me/5521972016917" target="_blank" rel="noreferrer"
+                className="flex w-full items-center justify-center gap-2 rounded-md border border-zinc-700 py-3 font-heading font-bold uppercase tracking-wide text-white hover:border-[#25D366] hover:text-[#25D366]">
+                <MessageCircle size={16} /> WhatsApp
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 

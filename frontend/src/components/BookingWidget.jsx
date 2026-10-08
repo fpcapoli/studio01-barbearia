@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Clock, Calendar as CalIcon, User, MessageCircle, Loader2, PartyPopper } from "lucide-react";
-import { api, BRL, formatApiError } from "@/lib/api";
+import { api, BRL, formatApiError, imgSrc, worksOn } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
@@ -31,7 +31,14 @@ export function BookingWidget({ services, barbers, onRequireAuth }) {
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(null);
 
-  const days = useMemo(() => nextDays(21).filter((d) => [2, 3, 4, 5, 6].includes(d.getDay())), []);
+  const days = useMemo(() => {
+    const pool = barberId === "any" ? barbers : barbers.filter((b) => b.id === barberId);
+    return nextDays(21).filter((d) => pool.some((b) => worksOn(b, d.getDay())));
+  }, [barberId, barbers]);
+
+  useEffect(() => {
+    if (date && !days.some((d) => ymd(d) === date)) { setDate(null); setSlotsData(null); }
+  }, [days, date]);
   const total = selected.reduce((s, id) => s + (services.find((x) => x.id === id)?.price || 0), 0);
   const duration = selected.reduce((s, id) => s + (services.find((x) => x.id === id)?.duration || 0), 0);
 
@@ -160,7 +167,7 @@ export function BookingWidget({ services, barbers, onRequireAuth }) {
           <div className="flex flex-wrap gap-2">
             <BarberChip active={barberId === "any"} onClick={() => setBarberId("any")} name="Primeiro Disponível" testid="barber-card-select-btn" />
             {barbers.map((b) => (
-              <BarberChip key={b.id} active={barberId === b.id} onClick={() => setBarberId(b.id)} name={b.name} avatar={b.avatar} testid="barber-card-select-btn" />
+              <BarberChip key={b.id} active={barberId === b.id} onClick={() => setBarberId(b.id)} name={b.name} avatar={imgSrc(b.avatar)} testid="barber-card-select-btn" />
             ))}
           </div>
         </Step>
@@ -213,7 +220,7 @@ export function BookingWidget({ services, barbers, onRequireAuth }) {
                             : avail ? "border-zinc-700 bg-zinc-900 text-white hover:border-amber-400"
                             : "cursor-not-allowed border-zinc-900 bg-zinc-950 text-zinc-700 line-through"
                           }`}
-                          title={!avail ? (s.status === "past" ? "Encerrado" : s.status === "blocked" ? "Bloqueado" : "Ocupado") : ""}
+                          title={!avail ? (s.status === "past" ? "Encerrado" : s.status === "blocked" ? "Bloqueado" : s.status === "off" ? "Fora do expediente" : "Ocupado") : ""}
                         >
                           {s.time}
                         </motion.button>

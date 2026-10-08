@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingUp, Users, DollarSign, Ban, Check, X, CheckCircle2, Lock } from "lucide-react";
-import { api, BRL, formatApiError } from "@/lib/api";
+import { api, BRL, formatApiError, worksOn } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/Logo";
 import { AuthModal } from "@/components/AuthModal";
@@ -52,6 +52,11 @@ export default function Admin() {
 
   const isBlocked = (bid, t) => blocks.some((b) => b.barber_id === bid && b.time === t);
   const aptAt = (bid, t) => appointments.find((a) => a.barber_id === bid && a.time === t && a.status !== "cancelado");
+  const toMin = (s) => { const [h, m] = s.split(":"); return +h * 60 + +m; };
+  const worksAt = (b, t) => {
+    const jsDay = new Date(`${date}T12:00:00`).getDay();
+    return worksOn(b, jsDay) && toMin(b.start || "09:00") <= toMin(t) && toMin(t) + 40 <= toMin(b.end || "19:00");
+  };
 
   if (!checked) return <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">Carregando...</div>;
 
@@ -125,6 +130,10 @@ export default function Admin() {
                               <button onClick={() => setStatus(apt.id, "concluido")} data-testid="admin-appointment-confirm-btn" title="Concluir" className="rounded bg-sky-600/80 p-1 hover:bg-sky-600"><CheckCircle2 size={13} /></button>
                               <button onClick={() => setStatus(apt.id, "cancelado")} data-testid="admin-appointment-cancel-btn" title="Cancelar" className="rounded bg-red-600/80 p-1 hover:bg-red-600"><X size={13} /></button>
                             </div>
+                          </div>
+                        ) : !worksAt(b, t) ? (
+                          <div className="flex w-full items-center justify-center rounded-md border border-dashed border-zinc-900 py-2 font-mono text-[11px] uppercase text-zinc-700" data-testid="admin-slot-off">
+                            Folga
                           </div>
                         ) : (
                           <button onClick={() => toggleBlock(b.id, t)} data-testid="admin-slot-block-toggle-btn"

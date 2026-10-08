@@ -18,3 +18,9 @@ export function formatApiError(detail) {
 
 export const BRL = (n) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
+
+export const imgSrc = (u) => (u && u.startsWith("/api/") ? `${BACKEND_URL}${u}` : u);
+
+export const WEEKDAY_LABELS = { 1: "Ter", 2: "Qua", 3: "Qui", 4: "Sex", 5: "Sáb" };
+
+export const worksOn = (b, jsDay) => (b.days || [1, 2, 3, 4, 5]).includes(jsDay - 1);

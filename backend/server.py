@@ -5,11 +5,13 @@ import os
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, BackgroundTasks
+from fastapi import FastAPI, APIRouter, Request, Response, HTTPException, Depends, BackgroundTasks, UploadFile, File
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import DuplicateKeyError
 from emailer import send_email, reminder_html
+from storage import put_object, get_object, init_storage, APP_NAME
+import asyncio
 import hmac
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
@@ -138,6 +140,29 @@ class BarberIn(BaseModel):
     name: str = Field(min_length=1)
     specialty: str = ""
     avatar: str = ""
+    days: List[int] = Field(default_factory=lambda: sorted(OPEN_WEEKDAYS))
+    start: str = "09:00"
+    end: str = "19:00"
+
+def _mins(t: str) -> int:
+    h, m = t.split(":")
+    return int(h) * 60 + int(m)
+
+def works(barber: dict, weekday: int, slot: Optional[str] = None) -> bool:
+    if weekday not in barber.get("days", OPEN_WEEKDAYS):
+        return False
+    if slot is None:
+        return True
+    return _mins(barber.get("start", "09:00")) <= _mins(slot) and _mins(slot) + 40 <= _mins(barber.get("end", "19:00"))
+
+def _barber_doc(body: "BarberIn") -> dict:
+    days = sorted({d for d in body.days if d in OPEN_WEEKDAYS})
+    if not days:
+        raise HTTPException(status_code=400, detail="Selecione ao menos um dia de atendimento")
+    if _mins(body.start) >= _mins(body.end):
+        raise HTTPException(status_code=400, detail="Horário de início deve ser antes do fim")
+    return {"name": body.name.strip(), "specialty": body.specialty.strip(),
+            "avatar": body.avatar.strip(), "days": days, "start": body.start, "end": body.end}
 
 # ---------------- Auth endpoints ----------------
 @api.post("/auth/register")
@@ -212,22 +237,33 @@ async def availability(date: str, barber_id: str = "any"):
         return {"open": False, "slots": [],
                 "message": "Fechado neste dia. Atendemos de terça a sábado, 09:00–19:00."}
     barbers = await db.barbers.find({}, {"_id": 0}).to_list(100)
-    barber_ids = [b["id"] for b in barbers]
+    wd = d.weekday()
+    if barber_id == "any":
+        working = [b for b in barbers if works(b, wd)]
+    else:
+        working = [b for b in barbers if b["id"] == barber_id and works(b, wd)]
+    if not working:
+        return {"open": False, "slots": [],
+                "message": "Este barbeiro não atende neste dia. Escolha outra data." if barber_id != "any"
+                else "Nenhum barbeiro atende neste dia."}
     booked, blocked = await _taken_map(date)
     now = datetime.now(timezone.utc) - timedelta(hours=3)  # BRT
     result = []
     for slot in SLOTS:
         slot_dt = datetime.combine(d, datetime.strptime(slot, "%H:%M").time())
         is_past = d == now.date() and slot_dt.time() <= now.time()
+        on_duty = [b["id"] for b in working if works(b, wd, slot)]
         if barber_id == "any":
             busy = booked.get(slot, set()) | blocked.get(slot, set())
-            free = [bid for bid in barber_ids if bid not in busy]
-            status = "available" if free and not is_past else ("past" if is_past else "booked")
+            free = [bid for bid in on_duty if bid not in busy]
+            status = "past" if is_past else ("off" if not on_duty else ("available" if free else "booked"))
         else:
             taken = barber_id in booked.get(slot, set())
             isblocked = barber_id in blocked.get(slot, set())
             if is_past:
                 status = "past"
+            elif not on_duty:
+                status = "off"
             elif isblocked:
                 status = "blocked"
             elif taken:
@@ -261,11 +297,13 @@ async def create_appointment(body: AppointmentIn, user: dict = Depends(get_curre
     busy = booked.get(body.time, set()) | blocked.get(body.time, set())
     if body.barber_id == "any" or not barber:
         barbers = await db.barbers.find({}, {"_id": 0}).to_list(100)
-        free = [b for b in barbers if b["id"] not in busy]
+        free = [b for b in barbers if b["id"] not in busy and works(b, d.weekday(), body.time)]
         if not free:
             raise HTTPException(status_code=409, detail="Horário esgotado, escolha outro")
         barber = free[0]
     else:
+        if not works(barber, d.weekday(), body.time):
+            raise HTTPException(status_code=400, detail="Este barbeiro não atende neste horário")
         if body.barber_id in busy:
             raise HTTPException(status_code=409, detail="Este horário acabou de ser ocupado")
 
@@ -310,6 +348,9 @@ async def reschedule_appointment(apt_id: str, body: RescheduleIn, user: dict = D
     now = datetime.now(timezone.utc) - timedelta(hours=3)
     if datetime.combine(d, datetime.strptime(body.time, "%H:%M").time()) <= now.replace(tzinfo=None):
         raise HTTPException(status_code=400, detail="Escolha um horário futuro")
+    barber = await db.barbers.find_one({"id": apt["barber_id"]}, {"_id": 0})
+    if barber and not works(barber, d.weekday(), body.time):
+        raise HTTPException(status_code=400, detail="Este barbeiro não atende neste horário")
     clash = await db.appointments.find_one({"_id": {"$ne": apt["_id"]}, "barber_id": apt["barber_id"],
                                             "date": body.date, "time": body.time, "status": {"$ne": "cancelado"}})
     blocked = await db.blocks.find_one({"barber_id": apt["barber_id"], "date": body.date, "time": body.time})
@@ -374,18 +415,45 @@ async def admin_metrics(date: str, admin: dict = Depends(require_admin)):
     return {"total": total, "revenue": revenue, "active": active, "occupancy": occupancy}
 
 DEFAULT_AVATAR = ""
+ALLOWED_IMG = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/heic": "heic", "image/heif": "heif"}
+
+@api.post("/admin/upload-photo")
+async def admin_upload_photo(file: UploadFile = File(...), admin: dict = Depends(require_admin)):
+    ext = ALLOWED_IMG.get(file.content_type or "")
+    if not ext:
+        raise HTTPException(status_code=400, detail="Envie uma imagem JPG, PNG ou WEBP")
+    data = await file.read()
+    if len(data) > 8 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Imagem muito grande (máx. 8MB)")
+    path = f"{APP_NAME}/barbers/{uuid.uuid4()}.{ext}"
+    try:
+        result = await asyncio.to_thread(put_object, path, data, file.content_type)
+    except Exception as e:
+        logger.error(f"Upload failed: {e}")
+        raise HTTPException(status_code=502, detail="Falha ao enviar a imagem")
+    await db.files.insert_one({"storage_path": result["path"], "content_type": file.content_type,
+                               "size": len(data), "is_deleted": False,
+                               "created_at": datetime.now(timezone.utc).isoformat()})
+    return {"url": f"/api/files/{result['path']}"}
+
+@api.get("/files/{path:path}")
+async def serve_file(path: str):
+    record = await db.files.find_one({"storage_path": path, "is_deleted": False})
+    if not record:
+        raise HTTPException(status_code=404, detail="Arquivo não encontrado")
+    data, ctype = await asyncio.to_thread(get_object, path)
+    return Response(content=data, media_type=record.get("content_type") or ctype,
+                    headers={"Cache-Control": "public, max-age=86400"})
 
 @api.post("/admin/barbers")
 async def admin_create_barber(body: BarberIn, admin: dict = Depends(require_admin)):
-    doc = {"id": "b" + uuid.uuid4().hex[:8], "name": body.name.strip(),
-           "specialty": body.specialty.strip(), "avatar": body.avatar.strip() or DEFAULT_AVATAR}
+    doc = {"id": "b" + uuid.uuid4().hex[:8], **_barber_doc(body)}
     await db.barbers.insert_one(dict(doc))
     return doc
 
 @api.put("/admin/barbers/{barber_id}")
 async def admin_update_barber(barber_id: str, body: BarberIn, admin: dict = Depends(require_admin)):
-    upd = {"name": body.name.strip(), "specialty": body.specialty.strip(),
-           "avatar": body.avatar.strip() or DEFAULT_AVATAR}
+    upd = _barber_doc(body)
     r = await db.barbers.update_one({"id": barber_id}, {"$set": upd})
     if r.matched_count == 0:
         raise HTTPException(status_code=404, detail="Barbeiro não encontrado")
@@ -449,6 +517,12 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     await db.users.create_index("email", unique=True)
+    try:
+        await asyncio.to_thread(init_storage)
+    except Exception as e:
+        logger.error(f"Storage init failed: {e}")
+    await db.barbers.update_many({"days": {"$exists": False}},
+                                 {"$set": {"days": sorted(OPEN_WEEKDAYS), "start": "09:00", "end": "19:00"}})
     # seed barbers
     if await db.barbers.count_documents({}) == 0:
         await db.barbers.insert_many([dict(b) for b in DEFAULT_BARBERS])
